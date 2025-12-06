@@ -49,14 +49,17 @@ searchStarterEl.addEventListener('click', function () {
     // headerEl.classList.add('searching')
     showSearch()
 })
-searchCloserEl.addEventListener('click', hideSearch)//콜백함수 적용
+searchCloserEl.addEventListener('click', function () {
+    event.stopPropagation()//이벤트 버블링 정지코드
+    hideSearch()
+})//콜백함수 적용
 searchShadowEl.addEventListener('click', hideSearch)
 
 
 function showSearch() {
     headerEl.classList.add('searching')
-    document.documentElement.classList.add('fixed')
-    headerMenuEls.reverse().forEach(function (el, index) {
+    stopScroll()
+    headerMenuEls.forEach(function (el, index) {
         el.style.transitionDelay = index * 0.4 / headerMenuEls.length + 's'
     })
     searchDelayEls.forEach(function (el, index) {
@@ -68,15 +71,77 @@ function showSearch() {
 }
 function hideSearch() {
     headerEl.classList.remove('searching')
-    document.documentElement.classList.remove('fixed')
-    headerMenuEls.reverse().forEach(function (el, index) {
+    playScroll()
+    headerMenuEls.forEach(function (el, index) {
         el.style.transitionDelay = index * 0.4 / headerMenuEls.length + 's'
     })
     searchDelayEls.reverse().forEach(function (el, index) {
         el.style.transitionDelay = index * 0.4 / searchDelayEls.length + 's'
     })
-    searchDelayEls.reverse()
     searchInputEl.value = '' //인풋 포커스 초기화
+}
+function playScroll() {
+    document.documentElement.classList.remove('fixed')
+}
+function stopScroll() {
+    document.documentElement.classList.add('fixed')
+}
+
+// 헤더 메뉴 토글!
+const menuStarterEl = document.querySelector('header .menu-starter')
+menuStarterEl.addEventListener('click', function () {
+    if (headerEl.classList.contains('menuing')) {
+        headerEl.classList.remove('menuing')
+        searchInputEl.value = ''
+        playScroll()
+    } else {
+        headerEl.classList.add('menuing')
+        stopScroll()
+    }
+})
+
+// 헤더 검색!
+const searchTextFieldEl = document.querySelector('header .textfield')
+const searchCancelEl = document.querySelector('header .search-canceler')
+
+searchTextFieldEl.addEventListener('click', function () {
+    headerEl.classList.add('searching--mobile')
+    searchCancelEl.focus()
+})
+searchCancelEl.addEventListener('click', function () {
+    headerEl.classList.remove('searching--mobile');
+})
+
+window.addEventListener('resize', function () {
+    if (this.window.innerWidth <= 740) {
+        headerEl.classList.remove('searching')
+    } else {
+        headerEl.classList.remove('searching-mobile')
+    }
+})
+
+//메뉴 토글버튼
+const navEl = document.querySelector('nav')
+const navMenuToggleEl = navEl.querySelector('.menu-toggler')
+const navMenuShadowEl = navEl.querySelector('.shadow')
+
+navMenuToggleEl.addEventListener('click', function () {
+    if (navEl.classList.contains('menuing')) {
+        hideNavMenu()
+    } else {
+        showNavMenu()
+    }
+})
+navEl.addEventListener('click', function (event) {
+    event.stopPropagation()
+})
+navMenuShadowEl.addEventListener('click', hideNavMenu)
+window.addEventListener('click', hideNavMenu)
+function showNavMenu() {
+    navEl.classList.add('menuing')
+}
+function hideNavMenu() {
+    navEl.classList.remove('menuing')
 }
 
 
@@ -156,6 +221,7 @@ navigations.forEach(function (nav) {
     mapEl.innerHTML = /* html */`
     <h3>
         <span class="text">${nav.title}</span>
+        <span class="icon">+</span>
     </h3>
     <ul>
        ${mapList}
@@ -167,3 +233,11 @@ navigations.forEach(function (nav) {
 
 const thisYearEL = document.querySelector('span.this-year')
 thisYearEL.textContent = new Date().getFullYear()
+
+const mapEls = document.querySelectorAll('footer .navigations .map')
+mapEls.forEach(function (el) {
+    const h3El = el.querySelector('h3')
+    h3El.addEventListener('click', function(){
+        el.classList.toggle('active')
+    })
+})
